@@ -1,6 +1,9 @@
 #include "../momentum_app.h"
 
 enum VarItemListIndex {
+    VarItemListIndexFishName,
+    VarItemListIndexFishSpecies,
+    VarItemListIndexFishHunger,
     VarItemListIndexDolphinLevel,
     VarItemListIndexDolphinXp,
     VarItemListIndexDolphinAngry,
@@ -25,6 +28,10 @@ static void momentum_app_scene_misc_dolphin_dolphin_level_changed(VariableItem* 
     variable_item_set_current_value_text(item, level_str);
     app->save_xp = true;
     app->save_dolphin = true;
+
+    variable_item_set_current_value_text(
+        variable_item_list_get(app->var_item_list, VarItemListIndexFishSpecies),
+        fish_species_name(fish_species_for_level(level)));
 
     item = variable_item_list_get(app->var_item_list, VarItemListIndexDolphinXp);
     variable_item_set_current_value_index(
@@ -64,6 +71,9 @@ static void momentum_app_scene_misc_dolphin_dolphin_xp_changed(VariableItem* ite
     snprintf(level_str, sizeof(level_str), "%u", level);
     variable_item_set_current_value_text(
         variable_item_list_get(app->var_item_list, VarItemListIndexDolphinLevel), level_str);
+    variable_item_set_current_value_text(
+        variable_item_list_get(app->var_item_list, VarItemListIndexFishSpecies),
+        fish_species_name(fish_species_for_level(level)));
 }
 
 static void momentum_app_scene_misc_dolphin_dolphin_angry_changed(VariableItem* item) {
@@ -118,11 +128,25 @@ void momentum_app_scene_misc_dolphin_on_enter(void* context) {
     dolphin_get_settings(app->dolphin, &settings);
 
     uint8_t level = dolphin_get_level(app->dolphin_xp);
+
+    // FishWare: Name, Art, Hunger
+    item = variable_item_list_add(var_item_list, "Name", 0, NULL, app);
+    variable_item_set_current_value_text(item, app->fish_name);
+
+    item = variable_item_list_add(var_item_list, "Species", 0, NULL, app);
+    variable_item_set_current_value_text(item, fish_species_name(fish_species_for_level(level)));
+
+    item = variable_item_list_add(var_item_list, "Hunger", 0, NULL, app);
+    variable_item_set_current_value_text(
+        item,
+        fish_hunger_name(
+            fish_hunger(furi_hal_rtc_get_timestamp(), momentum_settings.fish_fed_ts)));
+
     char level_str[4];
     snprintf(level_str, sizeof(level_str), "%u", level);
     item = variable_item_list_add(
         var_item_list,
-        "Dolphin Level",
+        "Fish Level",
         DOLPHIN_LEVEL_COUNT + 1,
         momentum_app_scene_misc_dolphin_dolphin_level_changed,
         app);
@@ -134,7 +158,7 @@ void momentum_app_scene_misc_dolphin_on_enter(void* context) {
     // uin8_t index too small for all levels, use 3 fake items to
     // show buttons and change values in callback
     item = variable_item_list_add(
-        var_item_list, "Dolphin XP", 3, momentum_app_scene_misc_dolphin_dolphin_xp_changed, app);
+        var_item_list, "Fish XP", 3, momentum_app_scene_misc_dolphin_dolphin_xp_changed, app);
     variable_item_set_current_value_index(
         item,
         app->dolphin_xp == 0              ? 0 :
@@ -146,7 +170,7 @@ void momentum_app_scene_misc_dolphin_on_enter(void* context) {
     snprintf(angry_str, sizeof(angry_str), "%lu", app->dolphin_angry);
     item = variable_item_list_add(
         var_item_list,
-        "Dolphin Angry",
+        "Fish Angry",
         BUTTHURT_MAX + 1,
         momentum_app_scene_misc_dolphin_dolphin_angry_changed,
         app);
@@ -197,6 +221,9 @@ bool momentum_app_scene_misc_dolphin_on_event(void* context, SceneManagerEvent e
             app->scene_manager, MomentumAppSceneMiscDolphin, event.event);
         consumed = true;
         switch(event.event) {
+        case VarItemListIndexFishName:
+            scene_manager_next_scene(app->scene_manager, MomentumAppSceneMiscFishName);
+            break;
         case VarItemListIndexDolphinXp:
             scene_manager_next_scene(app->scene_manager, MomentumAppSceneMiscDolphinXp);
             break;

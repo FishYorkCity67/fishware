@@ -1,0 +1,33 @@
+Filetype: Flipper Animation
+Version: 1
+
+Width: 128
+Height: 64
+Passive frames: 16
+Active frames: 6
+Frames order: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21
+Active cycles: 2
+Frame rate: 4
+Duration: 3600
+Active cooldown: 5
+
+Bubble slots: 2
+
+Slot: 0
+X: 66
+Y: 26
+Text: En garde!
+AlignH: Left
+AlignV: Bottom
+StartFrame: 17
+EndFrame: 27
+
+Slot: 1
+X: 66
+Y: 26
+Text: Fastest fish
+in the sea
+AlignH: Left
+AlignV: Bottom
+StartFrame: 17
+EndFrame: 27

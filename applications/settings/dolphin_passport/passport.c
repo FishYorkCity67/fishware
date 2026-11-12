@@ -1,5 +1,6 @@
 #include <furi.h>
 #include <furi_hal_version.h>
+#include <furi_hal_rtc.h>
 
 #include <gui/gui.h>
 #include <dolphin/dolphin.h>
@@ -29,25 +30,41 @@ static void input_callback(InputEvent* input, void* _ctx) {
     }
 }
 
+// FishWare: Portraet je Fischart (Zeile) und Stimmung (Spalte: froh, okay, sauer)
+static const Icon* const fish_portraits[FishSpeciesCount][3] = {
+    {&I_fish_guppy_happy_46x49, &I_fish_guppy_okay_46x49, &I_fish_guppy_angry_46x49},
+    {&I_fish_clown_happy_46x49, &I_fish_clown_okay_46x49, &I_fish_clown_angry_46x49},
+    {&I_fish_puffer_happy_46x49, &I_fish_puffer_okay_46x49, &I_fish_puffer_angry_46x49},
+    {&I_fish_ray_happy_46x49, &I_fish_ray_okay_46x49, &I_fish_ray_angry_46x49},
+    {&I_fish_sword_happy_46x49, &I_fish_sword_okay_46x49, &I_fish_sword_angry_46x49},
+    {&I_fish_shark_happy_46x49, &I_fish_shark_okay_46x49, &I_fish_shark_angry_46x49},
+};
+
 static void render_callback(Canvas* canvas, void* _ctx) {
     PassportContext* ctx = _ctx;
     DolphinStats* stats = ctx->stats;
 
-    char level_str[12];
+    char level_str[24];
     char xp_str[12];
     const char* mood_str = NULL;
     const Icon* portrait = NULL;
 
+    FishSpecies species = fish_species_for_level(stats->level);
+    uint8_t mood;
     if(stats->butthurt <= 4) {
-        portrait = &I_passport_happy_46x49;
-        mood_str = "Mood: Happy";
+        mood = 0;
+        mood_str = "Happy";
     } else if(stats->butthurt <= 9) {
-        portrait = &I_passport_okay_46x49;
-        mood_str = "Mood: Okay";
+        mood = 1;
+        mood_str = "Okay";
     } else {
-        portrait = &I_passport_bad_46x49;
-        mood_str = "Mood: Angry";
+        mood = 2;
+        mood_str = "Angry";
     }
+    FishHunger hunger =
+        fish_hunger(furi_hal_rtc_get_timestamp(), momentum_settings.fish_fed_ts);
+    if(hunger == FishHungerStarving) mood_str = "Hungry!";
+    portrait = fish_portraits[species][mood];
 
     uint32_t xp_progress = 0;
     uint32_t xp_to_levelup = dolphin_state_xp_to_levelup(stats->icounter);
@@ -76,10 +93,9 @@ static void render_callback(Canvas* canvas, void* _ctx) {
     furi_assert((stats->level > 0) && (stats->level <= DOLPHIN_LEVEL_COUNT + 1));
     canvas_draw_icon(canvas, 11, 2, portrait);
 
-    const char* my_name = furi_hal_version_get_name_ptr();
-    snprintf(level_str, sizeof(level_str), "Level: %hu", stats->level);
-    canvas_draw_str(canvas, 59, 10, my_name ? my_name : "Unknown");
-    canvas_draw_str(canvas, 59, 22, mood_str);
+    snprintf(level_str, sizeof(level_str), "Lv %hu  %s", stats->level, mood_str);
+    canvas_draw_str(canvas, 59, 10, fish_name());
+    canvas_draw_str(canvas, 59, 22, fish_species_name(species));
     canvas_draw_str(canvas, 59, 34, level_str);
 
     if(stats->level == DOLPHIN_LEVEL_COUNT + 1) {

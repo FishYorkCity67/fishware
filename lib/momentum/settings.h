@@ -9,6 +9,8 @@
 
 #define ASSET_PACKS_NAME_LEN 32
 
+#define FISH_NAME_LEN 16
+
 typedef enum {
     BatteryIconOff,
     BatteryIconBar,
@@ -104,6 +106,10 @@ typedef struct {
     FuriHalVersionColor spoof_color;
     ScreenFrameColor rpc_color_fg;
     ScreenFrameColor rpc_color_bg;
+    // FishWare (am Ende angehaengt, damit bestehende Offsets gleich bleiben)
+    char fish_name[FISH_NAME_LEN];
+    uint32_t fish_fed_ts; // Unix-Zeit der letzten Fuetterung, 0 = nie
+    uint32_t fishware_init; // Version der FishWare-Ersteinrichtung
 } MomentumSettings;
 
 void momentum_settings_save(void);

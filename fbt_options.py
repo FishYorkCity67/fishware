@@ -39,6 +39,8 @@ if not os.environ.get("DIST_SUFFIX"):
         DIST_SUFFIX = f"mntm-{branch_name}-{commit_sha}"
     # Dist name is only for naming of output files
     DIST_SUFFIX = DIST_SUFFIX.replace("/", "-")
+    # FishWare: Paketname immer "fishware-<version>"
+    DIST_SUFFIX = "fishware-1.0"
     # Instead, FW version uses tag name (mntm-xxx), or "mntm-dev" if not a tag (see scripts/version.py)
     # You can get commit and branch info in firmware with appropriate version_get_*() calls
 

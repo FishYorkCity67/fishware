@@ -8,6 +8,7 @@ extern "C" {
 
 #include "asset_packs.h"
 #include "settings.h"
+#include "fishware.h"
 
 #ifdef __cplusplus
 }

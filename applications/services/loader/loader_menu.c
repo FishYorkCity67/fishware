@@ -316,9 +316,11 @@ static void loader_menu_build_menu(LoaderMenuApp* app, LoaderMenu* menu) {
                     furi_string_set(line, "125 kHz RFID");
                 } else if(furi_string_equal(line, "SubGHz")) {
                     furi_string_set(line, "Sub-GHz");
-                } else if(furi_string_equal(line, "Xtreme")) {
-                    furi_string_set(line, "Momentum");
                 }
+            }
+            // FishWare: alte Eintraege (Xtreme/Momentum) auf FishWare umleiten
+            if(furi_string_equal(line, "Xtreme") || furi_string_equal(line, "Momentum")) {
+                furi_string_set(line, "FishWare");
             }
             loader_menu_find_add_app(app, storage, line);
         }
@@ -330,6 +332,11 @@ static void loader_menu_build_menu(LoaderMenuApp* app, LoaderMenu* menu) {
         for(size_t i = 0; i < FLIPPER_EXTERNAL_APPS_COUNT - 1; i++) {
             loader_menu_add_app_entry(
                 app, FLIPPER_EXTERNAL_APPS[i].name, FLIPPER_EXTERNAL_APPS[i].icon, NULL);
+        }
+        // FishWare: Aquarium-App standardmaessig im Hauptmenue
+        if(storage_file_exists(storage, FISH_AQUARIUM_PATH)) {
+            furi_string_set(line, FISH_AQUARIUM_PATH);
+            loader_menu_find_add_app(app, storage, line);
         }
     }
     furi_string_free(line);

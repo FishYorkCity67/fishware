@@ -163,8 +163,8 @@ static void
     momentum_app_push_mainmenu_app_raw(MomentumApp* app, FuriString* label, FuriString* exe) {
     CharList_push_back(app->mainmenu_app_exes, strdup(furi_string_get_cstr(exe)));
     // Display logic mimics applications/services/gui/modules/menu.c
-    if(furi_string_equal(label, "Momentum")) {
-        furi_string_set(label, "MNTM");
+    if(furi_string_equal(label, "FishWare")) {
+        furi_string_set(label, "Fish");
     } else if(furi_string_equal(label, "125 kHz RFID")) {
         furi_string_set(label, "RFID");
     } else if(furi_string_equal(label, "Sub-GHz")) {
@@ -228,9 +228,11 @@ void momentum_app_load_mainmenu_apps(MomentumApp* app) {
                     furi_string_set(line, "125 kHz RFID");
                 } else if(furi_string_equal(line, "SubGHz")) {
                     furi_string_set(line, "Sub-GHz");
-                } else if(furi_string_equal(line, "Xtreme")) {
-                    furi_string_set(line, "Momentum");
                 }
+            }
+            // FishWare: alte Eintraege (Xtreme/Momentum) auf FishWare umleiten
+            if(furi_string_equal(line, "Xtreme") || furi_string_equal(line, "Momentum")) {
+                furi_string_set(line, "FishWare");
             }
             momentum_app_push_mainmenu_app(app, line);
         }
@@ -245,6 +247,11 @@ void momentum_app_load_mainmenu_apps(MomentumApp* app) {
             furi_string_set(label, FLIPPER_EXTERNAL_APPS[i].name);
             furi_string_set(line, FLIPPER_EXTERNAL_APPS[i].name);
             momentum_app_push_mainmenu_app_raw(app, label, line);
+        }
+        // FishWare: Aquarium-App wie im Hauptmenue (loader_menu.c)
+        if(storage_file_exists(app->storage, FISH_AQUARIUM_PATH)) {
+            furi_string_set(line, FISH_AQUARIUM_PATH);
+            momentum_app_push_mainmenu_app(app, line);
         }
     }
     free(unused_icon);
@@ -397,6 +404,7 @@ MomentumApp* momentum_app_alloc() {
     DolphinStats stats = dolphin_stats(app->dolphin);
     app->dolphin_xp = stats.icounter;
     app->dolphin_angry = stats.butthurt;
+    strlcpy(app->fish_name, fish_name(), sizeof(app->fish_name));
 
     // Will be "(version) (commit or date)"
     app->version_tag = furi_string_alloc_set(version_get_version(NULL));
@@ -418,9 +426,8 @@ MomentumApp* momentum_app_alloc() {
             furi_string_left(app->version_tag, furi_string_size(app->version_tag) - 1);
         }
     } else {
-        // Make uppercase, add space, add build date
-        furi_string_replace(app->version_tag, "mntm", "MNTM");
-        furi_string_cat_printf(app->version_tag, " %s", version_get_builddate(NULL));
+        // FishWare: "fish-1.0" -> "FishWare v1.0"
+        furi_string_replace(app->version_tag, "fish-", "FishWare v");
     }
     // Add spaces to align right
     while(canvas_string_width(canvas, furi_string_get_cstr(app->version_tag)) <=

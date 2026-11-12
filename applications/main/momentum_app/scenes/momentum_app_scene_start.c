@@ -1,6 +1,7 @@
 #include "../momentum_app.h"
 
 enum VarItemListIndex {
+    VarItemListIndexFish,
     VarItemListIndexInterface,
     VarItemListIndexProtocols,
     VarItemListIndexMisc,
@@ -15,6 +16,9 @@ void momentum_app_scene_start_on_enter(void* context) {
     MomentumApp* app = context;
     VariableItemList* var_item_list = app->var_item_list;
     VariableItem* item;
+
+    item = variable_item_list_add(var_item_list, "Fish", 0, NULL, app);
+    variable_item_set_current_value_text(item, ">");
 
     item = variable_item_list_add(var_item_list, "Interface", 0, NULL, app);
     variable_item_set_current_value_text(item, ">");
@@ -44,6 +48,10 @@ bool momentum_app_scene_start_on_event(void* context, SceneManagerEvent event) {
         scene_manager_set_scene_state(app->scene_manager, MomentumAppSceneStart, event.event);
         consumed = true;
         switch(event.event) {
+        case VarItemListIndexFish:
+            scene_manager_set_scene_state(app->scene_manager, MomentumAppSceneMiscDolphin, 0);
+            scene_manager_next_scene(app->scene_manager, MomentumAppSceneMiscDolphin);
+            break;
         case VarItemListIndexInterface:
             scene_manager_set_scene_state(app->scene_manager, MomentumAppSceneInterface, 0);
             scene_manager_next_scene(app->scene_manager, MomentumAppSceneInterface);

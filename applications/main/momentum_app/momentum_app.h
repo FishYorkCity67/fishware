@@ -27,6 +27,7 @@
 #include <dolphin/dolphin_i.h>
 #include <dolphin/helpers/dolphin_state.h>
 #include <momentum/settings.h>
+#include <momentum/fishware.h>
 #include <desktop/views/desktop_view_slideshow.h>
 
 #include <applications.h>
@@ -82,6 +83,7 @@ typedef struct {
     char device_name[FURI_HAL_VERSION_ARRAY_NAME_LENGTH];
     uint32_t dolphin_xp;
     uint32_t dolphin_angry;
+    char fish_name[FISH_NAME_LEN];
     FuriString* version_tag;
 
     bool save_mainmenu_apps;

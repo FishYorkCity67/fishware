@@ -7,6 +7,8 @@ from datetime import date, datetime
 
 from flipper.app import App
 
+FISHWARE_VERSION = "fish-1.0"
+
 
 class GitVersion:
     REVISION_SUFFIX_LENGTH = 8
@@ -41,7 +43,8 @@ class GitVersion:
             or "unknown"
         )
 
-        version = tag or "mntm-dev"
+        # FishWare: eigene Versionsnummer statt Momentum-Tag
+        version = FISHWARE_VERSION
 
         if "SOURCE_DATE_EPOCH" in os.environ:
             commit_date = datetime.utcfromtimestamp(

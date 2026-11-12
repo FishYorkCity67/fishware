@@ -3,6 +3,8 @@
 #include <furi_hal.h>
 #include <rgb_backlight.h>
 #include <flipper_format/flipper_format.h>
+#include <toolbox/stream/file_stream.h>
+#include "fishware.h"
 
 #define TAG "MomentumSettings"
 
@@ -47,6 +49,9 @@ MomentumSettings momentum_settings = {
     .spoof_color = FuriHalVersionColorUnknown, // Real
     .rpc_color_fg = {{ScreenColorModeDefault, {.value = 0x000000}}}, // Default Black
     .rpc_color_bg = {{ScreenColorModeDefault, {.value = 0xFF8200}}}, // Default Orange
+    .fish_name = "Bubbles", // FishWare
+    .fish_fed_ts = 0, // Nie gefuettert
+    .fishware_init = 0, // Ersteinrichtung noch nicht gelaufen
 };
 
 typedef enum {
@@ -121,7 +126,56 @@ static const struct {
     {setting_enum(spoof_color, FuriHalVersionColorCount)},
     {setting_uint(rpc_color_fg, 0x000000, 0xFFFFFF)},
     {setting_uint(rpc_color_bg, 0x000000, 0xFFFFFF)},
+    {setting_str(fish_name)},
+    {setting_uint(fish_fed_ts, 0, UINT32_MAX)},
+    {setting_uint(fishware_init, 0, 255)},
 };
+
+#define FISHWARE_INIT_VERSION 1
+#define FISHWARE_MAINMENU_PATH INT_PATH(".mainmenu_apps.txt")
+
+// Haengt die Aquarium-App an eine bestehende Hauptmenue-Liste an
+static void fishware_add_aquarium_to_mainmenu(Storage* storage) {
+    Stream* stream = file_stream_alloc(storage);
+    FuriString* line = furi_string_alloc();
+    bool found = false;
+    if(file_stream_open(stream, FISHWARE_MAINMENU_PATH, FSAM_READ_WRITE, FSOM_OPEN_EXISTING)) {
+        while(stream_read_line(stream, line)) {
+            furi_string_trim(line);
+            if(furi_string_equal(line, FISH_AQUARIUM_PATH)) found = true;
+        }
+        if(!found) {
+            stream_seek(stream, 0, StreamOffsetFromEnd);
+            // Falls die letzte Zeile ohne Umbruch endet, erst einen setzen
+            if(stream_size(stream) > 0) {
+                char last = 0;
+                stream_seek(stream, -1, StreamOffsetFromEnd);
+                stream_read(stream, (uint8_t*)&last, 1);
+                stream_seek(stream, 0, StreamOffsetFromEnd);
+                if(last != '\n') stream_write_char(stream, '\n');
+            }
+            stream_write_cstring(stream, FISH_AQUARIUM_PATH "\n");
+        }
+    }
+    file_stream_close(stream);
+    stream_free(stream);
+    furi_string_free(line);
+}
+
+// Einmalige Umstellung auf FishWare (z. B. nach Update von Momentum)
+static void fishware_first_setup(void) {
+    if(momentum_settings.fishware_init >= FISHWARE_INIT_VERSION) return;
+    FURI_LOG_I(TAG, "FishWare Ersteinrichtung");
+    strlcpy(momentum_settings.asset_pack, "FishWare", sizeof(momentum_settings.asset_pack));
+    if(momentum_settings.fish_name[0] == '\0') {
+        strlcpy(momentum_settings.fish_name, "Bubbles", sizeof(momentum_settings.fish_name));
+    }
+    Storage* storage = furi_record_open(RECORD_STORAGE);
+    fishware_add_aquarium_to_mainmenu(storage);
+    furi_record_close(RECORD_STORAGE);
+    momentum_settings.fishware_init = FISHWARE_INIT_VERSION;
+    momentum_settings_save();
+}
 
 void momentum_settings_load(void) {
     Storage* storage = furi_record_open(RECORD_STORAGE);
@@ -164,6 +218,8 @@ void momentum_settings_load(void) {
     }
     flipper_format_free(file);
     furi_record_close(RECORD_STORAGE);
+
+    fishware_first_setup();
 
     rgb_backlight_load_settings(momentum_settings.rgb_backlight);
 }

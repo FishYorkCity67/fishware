@@ -19,6 +19,10 @@
 // helpers
 
 static const char* loader_find_external_application_by_name(const char* app_name) {
+    // FishWare: alter App-Name (z. B. aus Tastenbelegungen) zeigt auf FishWare
+    if(strcmp(app_name, "Momentum") == 0 || strcmp(app_name, "Xtreme") == 0) {
+        app_name = "FishWare";
+    }
     for(size_t i = 0; i < FLIPPER_EXTERNAL_APPS_COUNT; i++) {
         if(strcmp(FLIPPER_EXTERNAL_APPS[i].name, app_name) == 0) {
             return FLIPPER_EXTERNAL_APPS[i].path;
