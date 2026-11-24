@@ -1,3 +1,20 @@
+# FishWare
+
+Flipper-Zero-Firmware auf Basis von [Momentum](https://github.com/Next-Flip/Momentum-Firmware) – mit Fisch statt Delfin.
+
+- Fisch-Tamagotchi statt Delfin: Die Fischart wächst mit dem Level (Guppy → Clownfisch → Kugelfisch → Rochen → Schwertfisch → Hai), der Name ist frei wählbar
+- Eigene **Aquarium-App** (`/ext/apps/Games/fish_aquarium.fap`)
+- Ozean-Asset-Pack „FishWare“, eigenes Boot-Logo und eine FishWare-Einstellungsseite
+- Alles aus Momentum bleibt drin
+
+Bauen: `.\fbt.cmd COMPACT=1 DEBUG=0 updater_package` → `dist\f7-C\flipper-z-f7-update-fishware-1.0.tgz`. Die Grafiken erzeugt `python scripts\fishware\gen_gfx.py`.
+
+Flashen auf eigenes Risiko. Inoffizielles Projekt, nicht mit Flipper Devices oder dem Momentum-Team verbunden. Lizenz: GPL-3.0 wie Momentum (siehe [LICENSE](LICENSE)).
+
+---
+
+*Ab hier folgt die originale Momentum-README.*
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo_dark.png">
